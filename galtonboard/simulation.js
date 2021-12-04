@@ -21,7 +21,7 @@ function reset(){
   for (let i=0; i<8; i++){
     for ( let j=-10; j<=10; j++){
       let xoff = (i%2)==0? 15: 0;
-      balls.push({ "fx":j*30+xoff, "fy":-180+0.87*30*i, "r":5  });
+      balls.push({ "fx":j*30+xoff, "fy":-220+0.87*30*i, "r":5  });
     }
   }
   
@@ -29,8 +29,8 @@ function reset(){
   boxs.push({ "x":0, "y":220, "sx":640, "sy":20 });
   
   for (let i=-9; i<=8; i++){
-    boxs.push({ "x":i*30 +15, "y":120, "sx":10, "sy":180 });
-    balls.push({ "fx":i*30 + 15, "fy":120-90, "r":5  });
+    boxs.push({ "x":i*30 +15, "y":100, "sx":10, "sy":220 });
+    balls.push({ "fx":i*30 + 15, "fy":100-110, "r":5  });
   }
   
   boxnodes.data(boxs)
@@ -93,7 +93,7 @@ function step(nowt){
 function add(){
     let it = { 
       "x":0.0, 
-      "y":-220,
+      "y":-280,
       "vx": rnorm()*30,
       "vy": rnorm()*30,
       "r":5
@@ -113,7 +113,8 @@ function ballscollider(){
       let rval = target.r + source.r;
       if ( rnow >= rval ) continue;
       let nx = dx/rnow, ny = dy/rnow;
-      let scale = (rval-rnow) * 1;
+      let scale = (rval-rnow) * 0.5;
+      if ( ("fx" in target) || "fx" in source ){ scale *=2.; }
       target.x += nx*scale;
       target.y += ny*scale;
       source.x -= nx*scale;
