@@ -29,8 +29,8 @@ function reset(){
   boxs.push({ "x":0, "y":220, "sx":640, "sy":20 });
   
   for (let i=-9; i<=8; i++){
-    boxs.push({ "x":i*30 +15, "y":120, "sx":15, "sy":180 });
-    balls.push({ "fx":i*30 + 15, "fy":120-90, "r":7.5  });
+    boxs.push({ "x":i*30 +15, "y":120, "sx":10, "sy":180 });
+    balls.push({ "fx":i*30 + 15, "fy":120-90, "r":5  });
   }
   
   boxnodes.data(boxs)
