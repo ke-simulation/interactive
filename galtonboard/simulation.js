@@ -47,6 +47,7 @@ function reset(){
 function step_wrapper(nowt){
   try{
     step(nowt)
+    
   } catch(err){
     console.log("simulation stopped by following error!\n"+ err);
     stepper.stop();
@@ -75,7 +76,16 @@ function step(nowt){
     .join("circle")
     .attr("r", d=>{return d.r} )
     .attr("cx", d=>{return d.x;} )
-    .attr("cy", d=>{return d.y;} );
+    .attr("cy", d=>{return d.y;} )
+    .style("fill", d=>{
+        if ( "fx" in d ) {return "black"}
+        else{ return "orange"}
+    })
+    .style("stroke", d=>{
+        if ( "fx" in d ) {return false}
+        else{ return "black"}
+    })
+
   
   prevt = nowt;
 }
@@ -86,7 +96,7 @@ function add(){
       "y":-220,
       "vx": rnorm()*30,
       "vy": rnorm()*30,
-      "r":7.5
+      "r":5
     };
     balls.push(it);
 }
