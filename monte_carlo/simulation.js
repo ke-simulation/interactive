@@ -105,7 +105,7 @@ d3.select("button#random1").on("click", e=>{
     let y = Math.random()*460;
 
     nof_points+=1
-    flag=false
+    let flag=false
     if(y==460){
         circle_out+=1
         flag=true
@@ -131,8 +131,8 @@ d3.select("button#random10").on("click", e=>{
         let x = Math.random()*460;
         let y = Math.random()*460;
 
-        flag=false
         nof_points+=1
+        let flag=false
         if(y==460){
             circle_out+=1
             flag=true
@@ -161,7 +161,7 @@ d3.select("button#random50").on("click", e=>{
         let y = Math.random()*460;
 
         nof_points+=1
-        flag=false
+        let flag=false
         if(y==460){
             circle_out+=1
             flag=true
