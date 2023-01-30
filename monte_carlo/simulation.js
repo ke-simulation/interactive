@@ -131,16 +131,20 @@ d3.select("button#random10").on("click", e=>{
         let x = Math.random()*460;
         let y = Math.random()*460;
 
+        flag=false
         nof_points+=1
         if(y==460){
             circle_out+=1
+            flag=true
         }else if(x*x+(460.0-y)*(460.0-y)<=460.0*460.0){
             circle_in+=1
+            flag=false
         }else{
             circle_out+=1
+            flag=true
         }
 
-        add_plot(x,y);
+        add_plot(x,y,flag);
     }
     
     c_pi=4*circle_in/nof_points;
@@ -157,15 +161,19 @@ d3.select("button#random50").on("click", e=>{
         let y = Math.random()*460;
 
         nof_points+=1
+        flag=false
         if(y==460){
             circle_out+=1
+            flag=true
         }else if(x*x+(460.0-y)*(460.0-y)<=460.0*460.0){
             circle_in+=1
+            flag=false
         }else{
             circle_out+=1
+            flag=true
         }
 
-        add_plot(x,y);
+        add_plot(x,y,flag);
     }
     
     c_pi=4*circle_in/nof_points;
