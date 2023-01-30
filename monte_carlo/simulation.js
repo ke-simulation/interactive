@@ -48,8 +48,8 @@ d3.select("g.chart")
         .attr("d", arc)
         .attr("transform", "translate(-230,220)")
 
-function add_plot(x,y){
-  dat.push( {"x":x, "y":y, "id":0} );
+function add_plot(x,y, flag){
+  dat.push( {"x":x, "y":y, "id":0, "flag":flag} );
 }
 
 function update(){
@@ -84,6 +84,7 @@ function update(){
                     .classed("plot",true)
                     .attr("cx", d=>{return d.x-230;})
                     .attr("cy", d=>{return d.y-240;})
+                    .attr("fill", d=>{return d.flag ? "#005affff" : "#ff4b00ff"})
                     .transition()
                     .attr("r",3);
             },
@@ -104,15 +105,19 @@ d3.select("button#random1").on("click", e=>{
     let y = Math.random()*460;
 
     nof_points+=1
+    flag=false
     if(y==460){
         circle_out+=1
+        flag=true
     }else if(x*x+(460.0-y)*(460.0-y)<=460.0*460.0){
         circle_in+=1
+        flag=false
     }else{
         circle_out+=1
+        flag=true
     }
     
-    add_plot(x,y);
+    add_plot(x,y,flag);
     
     c_pi=4*circle_in/nof_points;
 
