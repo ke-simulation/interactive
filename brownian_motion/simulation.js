@@ -42,10 +42,11 @@ d3.select("g.chart")
 
 let ptcl = [];
 let time;
-let N=21
-let S=0.2
+//let N=17
+let N=20
+let S=0.25
 let ttemp=0.2
-let cut=3*S
+let cut=2*S
 let margin=cut/4.0
 let cutp2=cut*cut
 let cutm=cut+margin
@@ -56,13 +57,21 @@ let dt=0.001
 let count=0
 let prev_pos=[{x: 0.5, y:0.5}]
 
+let bin = 31
+
+let padded_sample_pos = []
+let padded_sampling = false
+
 let max_sample_cnt_x = 0
-let sample_x = new Array(25)
+let sample_x = new Array(bin)
 let pbc_cnt_x = 0
 
 let max_sample_cnt_y = 0
-let sample_y = new Array(25)
+let sample_y = new Array(bin)
 let pbc_cnt_y = 0
+
+let samp_step = 500
+let spd = 3
 
 function repos_x(){
 
@@ -99,6 +108,16 @@ function repos_x(){
 
     d3.select("g.chart")
     .append("line")
+        .attr("x1", 150)
+        .attr("x2", 230)
+        .attr("y1", 30)
+        .attr("y2", 30)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
         .attr("x1", -230)
         .attr("x2", -230)
         .attr("y1", -160)
@@ -116,6 +135,17 @@ function repos_x(){
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4, 4")
         .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1",  -40)
+        .attr("x2",  -40)
+        .attr("y1", -160)
+        .attr("y2", -240)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
 }
 
 
@@ -154,6 +184,16 @@ function repos_y(){
 
     d3.select("g.chart")
     .append("line")
+        .attr("x1", 150)
+        .attr("x2", 230)
+        .attr("y1", 30)
+        .attr("y2", 30)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
         .attr("x1", -230)
         .attr("x2", -230)
         .attr("y1", -160)
@@ -170,29 +210,40 @@ function repos_y(){
         .attr("y2", -240)
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff") 
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1",  -40)
+        .attr("x2",  -40)
+        .attr("y1", -160)
+        .attr("y2", -240)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
         .attr("stroke","#000000ff")
+
 }
 
 
-function sampling(){
-
-//    console.log("Alpha")
-    if(pbc_cnt_x==0){
-        let pos = Math.floor(ptcl[0].x*25)
+function sampling(xypos){
+    //console.log(xypos.x, xypos.y)
+    if(padded_sampling || pbc_cnt_x==0){
+        let pos = Math.floor(xypos.x*bin)
         sample_x[pos]+=1
         if(max_sample_cnt_x<sample_x[pos]){
             max_sample_cnt_x = sample_x[pos]
         }
-  //      console.log("Bravo")
     }
-    if(pbc_cnt_y==0){
-        let pos = Math.floor(ptcl[0].y*25)
+    if(padded_sampling || pbc_cnt_y==0){
+        let pos = Math.floor(xypos.y*bin)
         sample_y[pos]+=1
         if(max_sample_cnt_y<sample_y[pos]){
             max_sample_cnt_y = sample_y[pos]
         }
-    //    console.log("Charlie")
     }
+}
+
+function sampling_draw(){
 
     d3.select("g.chart").selectAll("rect").remove()
     d3.select("g.chart")
@@ -208,9 +259,9 @@ function sampling(){
     for(let a=0; a<sample_x.length; a++){
         d3.select("g.chart")
         .append("rect")
-            .attr("x", a/25*380-230)
+            .attr("x", a/bin*380-230)
             .attr("y", -160-sample_x[a]/max_sample_cnt_x*80)
-            .attr("width", 380/25)
+            .attr("width", 380/bin)
             .attr("height", sample_x[a]/max_sample_cnt_x*80)
             .attr("fill","#bb0000ff")
             .attr("stroke-width", 2)
@@ -219,34 +270,25 @@ function sampling(){
         d3.select("g.chart")
         .append("rect")
             .attr("x", 150)
-            .attr("y", a/25*380-160)
+            .attr("y", a/bin*380-160)
             .attr("width", sample_y[a]/max_sample_cnt_y*80)
-            .attr("height", 380/25)
+            .attr("height", 380/bin)
             .attr("fill","#00bb00ff")
             .attr("stroke-width", 2)
             .attr("stroke", "#000000ff")
-
-    }/*
-        
-    let orig_pos_y = 0
-        .data(sample_y)
-        .enter()
-        .append("rect")
-        .attr("x", 150)
-        .attr("y", d=>{
-            orig_pos_y+=1
-            return orig_pos_y/25*380-160
-        })
-        .attr("width", d=>{return d/max_sample_cnt_y*80;})
-        .attr("height", 380/25)
-        .attr("fill","#00000000")
-        .attr("stroke-width", 1)
-        .attr("stroke", "#000000ff")
-    */
+    }
 }
 
 function initialize(){
-    
+ 
+    d3.select("g.chart").selectAll("circle").remove()
+    ptcl=[]
+
+    samp_step = 500
+    padded_sample_pos = []
+    padded_sampling = false
+    spd = 3
+   
     d3.select("g.chart")
     .append("rect")
         .attr("x", -230)
@@ -256,8 +298,6 @@ function initialize(){
         .attr("fill","#00000000")
         .attr("stroke-width", 1)
         .attr("stroke", "#000000ff")
-
-
 
     for(let a=0; a<N; a++){
         for(let b=0; b<N; b++){ 
@@ -269,20 +309,24 @@ function initialize(){
         }
     }
     
-    for(let a=0; a<25; a++){
+    for(let a=0; a<bin; a++){
         sample_x[a] = 0
         sample_y[a] = 0
     }
 
+    erase()
     //calc_force()
     make_list()
 }
 
 
 
+let prev_ps_pos = {x: 0.5, y: 0.5}
 function update(){
 
     d3.select("g.chart").selectAll("circle").remove()
+    ptcl.push({x: prev_ps_pos.x, y: prev_ps_pos.y, s: S, t: 3})
+
     d3.select("g.chart")
         .selectAll("circle")
         .data(ptcl)
@@ -291,9 +335,24 @@ function update(){
             .attr("cx", d=>{return d.x*380-230;})
             .attr("cy", d=>{return d.y*380-160;})
             .attr("r",  d=>{return d.s*100;})
-            .attr("fill", d=>{return d.t ? (d.t==1 ? "#0000b0ff" : "#ff1b00aa") : "#005affff"})
-            .attr("stroke", d=>{return d.t ? "#000000ff" : "#00000000"})
+            .attr("fill", d=>{
+                if     (d.t==0) return "#005affff"
+                else if(d.t==1) return "#0000b0ff"
+                else if(d.t==2) return "#ff3b0077"
+                else            return "#00000000" 
+            })
+            .attr("stroke.width", d=>{
+                if     (d.t==0) return 0
+                else if(d.t==1) return 50
+                else if(d.t==2) return 50
+                else            return 50
+            })
+            .attr("stroke", d=>{
+                return d.t ? (d.t==3 ? "#00000077" : "#000000ff") : "#00000000"
+            })
 
+
+    ptcl.pop()
 }
 
 function calc_force(){
@@ -330,8 +389,6 @@ function calc_force(){
 
 function calc_force_from_list(){
    
-    //console.log("cffl")
-
     for(let a=0; a<N*N; a++){
         ptcl[a].fx=0
         ptcl[a].fy=0
@@ -449,7 +506,6 @@ function check_list(){
 
 function make_list(){
     
-    console.log("make_list")
     for(let a=0; a<N*N; a++){
         list[a]=[]
         ptcl[a].fx=0
@@ -487,7 +543,6 @@ function make_list(){
     rmargin = margin
 }
 
-
 let equilibrium =true
 function evolve(nowt){
     time = nowt
@@ -517,8 +572,10 @@ function evolve(nowt){
         prev_pos.y=ptcl[0].y
 
         velocity_scale()
-
-        if(count==2000){
+        if(count%spd==0){
+            update()
+        }
+        if(count==1000){
             pbc_cnt_x = 0
             pbc_cnt_y = 0
             equilibrium = false
@@ -527,8 +584,14 @@ function evolve(nowt){
     }else{
 
         ptcl[0].t=2
+        if(count%spd==0){
+//                .attr("r",  d=>{return d.s*100;})
+//                .attr("fill", d=>{return d.t ? (d.t==1 ? "#0000b0ff" : "#ff1b00aa") : "#005affff"})
+//                .attr("stroke", d=>{return d.t ? "#000000ff" : "#00000000"})
 
-        if(count%30==0){
+            update()
+        }
+        if(count%10==0){
             d3.select("g.chart")
             .append("line")
                 .attr("x1",  prev_pos.x*380-230)
@@ -539,18 +602,32 @@ function evolve(nowt){
                 .attr("stroke","#000000ff")
             prev_pos.x=ptcl[0].x
             prev_pos.y=ptcl[0].y
-    
-            if(count>=10000){
+        }
+        if(padded_sampling){
+            if(count%100==0){
+                if(padded_sample_pos.length == samp_step/100){
+                    if(padded_sampling){
+                        sampling({x: ptcl[0].x+pbc_cnt_x-padded_sample_pos[0].x+0.5, y: ptcl[0].y+pbc_cnt_y-padded_sample_pos[0].y+0.5})
+                        prev_ps_pos = {x: padded_sample_pos[0].npx, y: padded_sample_pos[0].npy}
+                        sampling_draw()
+                    }
+                    padded_sample_pos.shift()
+                }
+
+                console.log(padded_sample_pos)
+                padded_sample_pos.push({x: ptcl[0].x+pbc_cnt_x, y: ptcl[0].y+pbc_cnt_y, npx: ptcl[0].x, npy: ptcl[0].y})
+            }
+        }else{
+            if(count>=samp_step){
+                sampling({x: ptcl[0].x+pbc_cnt_x, y: ptcl[0].y+pbc_cnt_y})
+                sampling_draw()
                 velocity_scale()
                 repos_x()
                 repos_y()
                 count=0
             }
         }
-        sampling()
     }
-//    console.log(count)
-    update()
         
     count+=1
 
@@ -576,11 +653,147 @@ initialize()
 let stepper = timer(step_wrapper);
 
 
-//update()
+function erase(){
 
-d3.select("button#random1").on("click", e=>{ 
-    ttemp+=0.1
+    max_sample_cnt_x = 0
+    for(let a=0; a<bin; a++){
+        sample_x[a]=0
+    }
+    pbc_cnt_x = 0
+
+    max_sample_cnt_y = 0
+    for(let a=0; a<bin; a++){
+        sample_y[a]=0
+    }
+    pbc_cnt_y = 0
+    sampling_draw()
+    repos_x()
+    repos_y()
+    
+    padded_sample_pos=[]
+    padded_sample_pos.push({x: 0.5, y: 0.5, npx: 0.5, npy: 0.5})
+    prev_ps_pos = {x: 0.5, y: 0.5}
+
+    if(!equilibrium){
+        count=0
+    }
+    console.log(samp_step)
+}
+
+d3.select("button#ssp").on("click", e=>{ 
+    samp_step+=100
+    padded_sample_pos=[]
+    padded_sample_pos.push({x: 0.5, y: 0.5, npx: 0.5, npy: 0.5})
+    prev_ps_pos = {x: 0.5, y: 0.5}
+    
+    erase()
 });
+
+d3.select("button#ssm").on("click", e=>{ 
+    samp_step-=100
+    padded_sample_pos=[]
+    padded_sample_pos.push({x: 0.5, y: 0.5, npx: 0.5, npy: 0.5})
+    prev_ps_pos = {x: 0.5, y: 0.5}
+    if(samp_step<=0) samp_step = 100
+    erase()
+});
+
+d3.select("button#pps").on("click", e=>{ 
+
+    if(padded_sampling){
+        padded_sampling = false
+        padded_sample_pos = []
+        if(!equilibrium){
+            count = 0
+        }
+        repos_x()
+        repos_y()
+        prev_ps_pos = {x: 0.5, y: 0.5}
+        
+
+    }else{
+        padded_sampling = true
+        if(!equilibrium){
+            count = 0
+        }
+    }
+
+    padded_sample_pos = []
+});
+
+d3.select("button#eraseg").on("click", e=>{ 
+    erase()
+});
+
+d3.select("button#erasel").on("click", e=>{
+
+    d3.select("g.chart").selectAll("line").remove()
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1", 150)
+        .attr("x2", 230)
+        .attr("y1", 220)
+        .attr("y2", 220)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1", 150)
+        .attr("x2", 230)
+        .attr("y1", -160)
+        .attr("y2", -160)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1", 150)
+        .attr("x2", 230)
+        .attr("y1", 30)
+        .attr("y2", 30)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1", -230)
+        .attr("x2", -230)
+        .attr("y1", -160)
+        .attr("y2", -240)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1",  150)
+        .attr("x2",  150)
+        .attr("y1", -160)
+        .attr("y2", -240)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff") 
+
+    d3.select("g.chart")
+    .append("line")
+        .attr("x1",  -40)
+        .attr("x2",  -40)
+        .attr("y1", -160)
+        .attr("y2", -240)
+        .attr("stroke-width", 1)
+        .attr("stroke-dasharray", "4, 4")
+        .attr("stroke","#000000ff")
+});
+
+d3.select("button#reset").on("click", e=>{ 
+    initialize()
+});
+
+
 /*
 d3.select("button#random10").on("click", e=>{
     
