@@ -43,8 +43,8 @@ d3.select("g.chart")
 let ptcl = [];
 let time;
 //let N=17
-let N=20
-let S=0.25
+let N=17
+let S=0.27
 let ttemp=0.2
 let cut=2*S
 let margin=cut/4.0
